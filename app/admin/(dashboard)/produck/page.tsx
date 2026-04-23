@@ -1,63 +1,132 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import ProductCard from "../../../components/admin/dashboard/produk/ProductCard";
-import { Plus, Search } from "lucide-react";
-
-const products = [
-  { name: "Monstera Deliciosa", category: "Tropical Houseplant", price: "Rp 450.000", stock: 12, image: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?q=80&w=500" },
-  { name: "Sansevieria Trifasciata", category: "Air Purifying", price: "Rp 185.000", stock: 45, image: "https://images.unsplash.com/photo-1593433551532-794aa83669ad?q=80&w=500" },
-  { name: "Ficus Lyrata", category: "Statement Tree", price: "Rp 1.250.000", stock: 3, image: "https://images.unsplash.com/photo-1597055181300-e3633a207518?q=80&w=500" },
-  { name: "ZZ Plant Raven", category: "Low Light Expert", price: "Rp 340.000", stock: 0, image: "https://images.unsplash.com/photo-1632213702844-1e0615781374?q=80&w=500" },
-];
-
-const categories = ["Semua Produk", "Tanaman Indoor", "Pot & Media Tanam", "Suplemen Nutrisi"];
+import AddProductModal from "../../../components/admin/dashboard/produk/AddProductModal";
+import { Plus, Loader2 } from "lucide-react";
 
 export default function ProduckPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("Semua Produk");
+  
+  // 🔥 TAMBAHKAN STATE INI
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/admin/produk");
+      const data = await res.json();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleDelete = (id: number) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  // 🔥 TAMBAHKAN FUNGSI INI
+  const handleEdit = (product: any) => {
+    setSelectedProduct(product); // Masukkan data produk ke state
+    setIsModalOpen(true);        // Buka modal
+  };
+
+  // 🔥 FUNGSI CLOSE MODAL (Agar state bersih kembali)
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const dynamicCategories = [
+    "Semua Produk",
+    ...Array.from(new Set(products.map((p) => p.category))),
+  ];
+
+  const filteredProducts =
+    selectedCategory === "Semua Produk"
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
+
+  const formatIDR = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <section>
-      {/* Header section dengan Search */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-emerald-900">Produk</h1>
-          <p className="text-gray-400 text-sm mt-1">Kelola inventaris koleksi botani Anda.</p>
-        </div>
-
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search catalog, botanical collections..." 
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-          />
-        </div>
+      <div className="flex justify-between mb-8">
+        <h1 className="text-3xl font-bold text-emerald-900">Produk</h1>
       </div>
 
-      {/* Filter Categories */}
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-        {categories.map((cat, i) => (
-          <button 
-            key={cat} 
-            className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-              i === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-gray-500 hover:bg-gray-100'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {!loading && products.length > 0 && (
+        <div className="flex gap-2 mb-8 overflow-x-auto">
+          {dynamicCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-full text-xs transition-all ${
+                selectedCategory === cat
+                  ? "bg-emerald-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Grid Produk */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {/* Tombol Add New Product (Sesuai Visual) */}
-        <button className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6 hover:border-emerald-300 hover:bg-emerald-50 transition-all group min-h-[250px]">
-          <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-emerald-100 flex items-center justify-center text-gray-400 group-hover:text-emerald-600 mb-3 transition-colors">
-            <Plus size={24} />
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6 hover:border-emerald-300 hover:bg-emerald-50 transition-all group min-h-[200px] w-full max-w-[200px]"
+        >
+          <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-emerald-100 flex items-center justify-center text-gray-400 group-hover:text-emerald-600 mb-2 transition-colors">
+            <Plus size={20} />
           </div>
-          <span className="text-sm font-bold text-gray-400 group-hover:text-emerald-700">Add Product</span>
+          <span className="text-[11px] font-bold text-gray-400 group-hover:text-emerald-700">Add Product</span>
         </button>
 
-        {products.map((product, index) => (
-          <ProductCard key={index} {...product} />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[200px]">
+            <Loader2 className="animate-spin text-emerald-600" />
+          </div>
+        ) : (
+          filteredProducts.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              category={product.category}
+              price={formatIDR(product.price)}
+              stock={product.stock}
+              image={product.image}
+              onDelete={handleDelete}
+              onEdit={() => handleEdit(product)} // Ini sudah benar
+            />
+          ))
+        )}
       </div>
+
+      <AddProductModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal} // Gunakan handleCloseModal
+        onSuccess={fetchProducts}
+        editData={selectedProduct} // 🔥 Kirim data edit ke modal
+      />
     </section>
   );
 }

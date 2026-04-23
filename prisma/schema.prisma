@@ -19,13 +19,14 @@ model User {
 }
 
 model Product {
-  id         Int         @id @default(autoincrement())
-  name       String
-  price      Float
-  stock      Int
-  image String?
-  createdAt  DateTime    @default(now())
-  orderItems OrderItem[]
+  id          Int         @id @default(autoincrement())
+  name        String
+  category    String      // Tambahkan kolom ini
+  price       Float
+  stock       Int
+  image       String?
+  createdAt   DateTime    @default(now())
+  orderItems  OrderItem[]
 }
 
 model Order {

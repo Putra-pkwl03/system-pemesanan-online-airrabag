@@ -1,3 +1,6 @@
+import { writeFile } from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -8,90 +11,113 @@ export async function GET() {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
     });
-
-    return Response.json(products, { status: 200 });
+    return NextResponse.json(products, { status: 200 });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { message: "Gagal mengambil data produk" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Gagal mengambil data" }, { status: 500 });
   }
 }
 
-// 🔥 CREATE PRODUCT
-export async function POST(req: Request) {
+// 🔥 CREATE PRODUCT (Handle FormData & File Upload)
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, price, stock, image } = body;
+    const formData = await req.formData();
+    
+    // Ambil data dari FormData
+    const name = formData.get("name") as string;
+    const price = formData.get("price") as string;
+    const stock = formData.get("stock") as string;
+    const category = formData.get("category") as string;
+    const file = formData.get("file") as File; // 'file' sesuai dengan data.append("file", ...) di FE
 
-    if (!name || !price || !stock) {
-      return Response.json(
-        { message: "Data tidak lengkap" },
-        { status: 400 }
-      );
+    if (!name || !price || !stock || !category) {
+      return NextResponse.json({ message: "Data tidak lengkap" }, { status: 400 });
+    }
+
+    let imageUrl = "";
+
+    // Logika Simpan File jika ada
+    if (file && file.size > 0) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // Buat nama file unik
+      const filename = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+      const filePath = path.join(process.cwd(), "public/uploads", filename);
+
+      // Simpan ke folder public/uploads
+      await writeFile(filePath, buffer);
+      imageUrl = `/uploads/${filename}`;
     }
 
     const product = await prisma.product.create({
       data: {
         name,
+        category,
         price: parseFloat(price),
         stock: parseInt(stock),
-        image,
+        image: imageUrl, // Path lokal yang bisa diakses browser
       },
     });
 
-    return Response.json(product, { status: 201 });
+    return NextResponse.json(product, { status: 201 });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { message: "Gagal menambahkan produk" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Gagal menambahkan produk" }, { status: 500 });
   }
 }
 
 // 🔥 UPDATE PRODUCT
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { id, name, price, stock, image } = body;
+    const formData = await req.formData();
+    const id = formData.get("id") as string;
+    const name = formData.get("name") as string;
+    const price = formData.get("price") as string;
+    const stock = formData.get("stock") as string;
+    const category = formData.get("category") as string;
+    const file = formData.get("file") as File;
 
     if (!id) {
-      return Response.json(
-        { message: "ID wajib diisi" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
+    }
+
+    let updateData: any = {
+      name,
+      category,
+      price: price ? parseFloat(price) : undefined,
+      stock: stock ? parseInt(stock) : undefined,
+    };
+
+    // Jika user upload foto baru saat update
+    if (file && file.size > 0) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filename = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+      const filePath = path.join(process.cwd(), "public/uploads", filename);
+      await writeFile(filePath, buffer);
+      updateData.image = `/uploads/${filename}`;
     }
 
     const product = await prisma.product.update({
       where: { id: Number(id) },
-      data: {
-        name,
-        price: price ? parseFloat(price) : undefined,
-        stock: stock ? parseInt(stock) : undefined,
-        image,
-      },
+      data: updateData,
     });
 
-    return Response.json(product, { status: 200 });
+    return NextResponse.json(product, { status: 200 });
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { message: "Gagal update produk" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Gagal update produk" }, { status: 500 });
   }
 }
-
-// 🔥 DELETE PRODUCT
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { id } = body;
+    const id = req.nextUrl.searchParams.get("id");
+
+    console.log("ID:", id); // debug
 
     if (!id) {
-      return Response.json(
+      return NextResponse.json(
         { message: "ID wajib diisi" },
         { status: 400 }
       );
@@ -101,13 +127,13 @@ export async function DELETE(req: Request) {
       where: { id: Number(id) },
     });
 
-    return Response.json(
-      { message: "Produk berhasil dihapus" },
+    return NextResponse.json(
+      { message: "Produk dihapus" },
       { status: 200 }
     );
   } catch (error) {
     console.error(error);
-    return Response.json(
+    return NextResponse.json(
       { message: "Gagal hapus produk" },
       { status: 500 }
     );
