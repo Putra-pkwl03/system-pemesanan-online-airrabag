@@ -1,48 +1,57 @@
-import { MoreHorizontal, Edit2 } from "lucide-react";
+import { Edit2, Trash2, Plus } from "lucide-react";
 
 interface ProductProps {
+  id: number;
   name: string;
   category: string;
   price: string;
   stock: number;
   image: string;
+  onDelete: (id: number) => void;
+  onEdit: (product: any) => void;
+  onAddToPromo: (product: any) => void; 
 }
 
-export default function ProductCard({ name, category, price, stock, image }: ProductProps) {
+export default function ProductCard({ id, name, category, price, stock, image, onAddToPromo, onEdit, onDelete }: ProductProps) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative group">
-      {/* Header Card */}
+    <div className="bg-[#063130] rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow relative group text-white">
       <div className="flex justify-between items-center mb-3">
-        <button className="flex items-center text-xs font-semibold text-emerald-600 hover:text-emerald-700">
-          <Edit2 size={14} className="mr-1" /> Edit
+        <button 
+          onClick={() => onEdit({ id, name, category, price, stock, image })}
+          className="flex items-center text-[10px] font-medium text-gray-200 hover:text-white transition-colors"
+        >
+          <Edit2 size={12} className="mr-1" /> Edit
         </button>
-        <button className="text-gray-400 hover:text-gray-600">
-          <MoreHorizontal size={18} />
+        <button 
+          onClick={() => onDelete(id)}
+          className="text-gray-200 hover:text-red-400 transition-colors"
+        >
+          <Trash2 size={14} />
         </button>
       </div>
 
-      {/* Product Image */}
-      <div className="aspect-square w-full rounded-xl overflow-hidden bg-gray-50 mb-4">
-        <img 
-          src={image} 
-          alt={name} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-        />
+      <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-800 mb-4">
+        <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
       </div>
 
-      {/* Info */}
-      <div className="space-y-1">
-        <h3 className="font-bold text-gray-800 text-sm truncate">{name}</h3>
-        <p className="text-[10px] text-gray-400 font-medium">{category}</p>
-        
-        <div className="flex justify-between items-end mt-3">
-          <p className="font-bold text-emerald-700 text-sm">{price}</p>
-          <div className={`text-[10px] font-bold px-2 py-1 rounded-md text-white shadow-sm ${
-            stock > 0 ? 'bg-emerald-500' : 'bg-red-500'
-          }`}>
-            {stock}
-          </div>
+      <div className="space-y-2">
+        <div className="min-h-[32px]">
+          <h3 className="font-semibold text-[11px] leading-tight line-clamp-2">{name}</h3>
+          <p className="text-[9px] text-gray-400 mt-0.5">{category}</p>
         </div>
+        
+        <div className="flex justify-between items-center">
+          <p className="font-bold text-sm">{price}</p>
+          <div className="text-[10px] border border-white/40 px-1.5 py-0.5 rounded bg-transparent">{stock}</div>
+        </div>
+
+        {/* Klik Button ini untuk memicu modal */}
+        <button 
+          onClick={() => onAddToPromo({ id, name, category, price, image })}
+          className="w-full mt-2 bg-[#DDCC9D] hover:bg-[#B6AB91] text-[#0f3433] text-[10px] font-bold py-1.5 rounded-full transition-colors flex items-center justify-center"
+        >
+          Tambah Ke Promo <Plus size={10} className="ml-1" />
+        </button>
       </div>
     </div>
   );

@@ -12,9 +12,9 @@ export default function AdminLayout({
       <Sidebar />
       
       {/* Area Konten Utama */}
-      <main className="flex-1 ml-64 p-8">
-        {/* Navbar akan selalu muncul di atas setiap halaman admin */}
         <Navbar />
+      <main className="flex-1 ml-64 p-12 mt-16">
+        {/* Navbar akan selalu muncul di atas setiap halaman admin */}
         
         {/* Content page (Dashboard / Produk / dll) */}
         {children}
