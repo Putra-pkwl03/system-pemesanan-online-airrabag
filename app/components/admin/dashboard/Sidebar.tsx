@@ -17,8 +17,8 @@ const menuItems = [
   { name: "Produk", icon: Package, href: "/admin/produck" }, // URL sesuai permintaanmu
   { name: "Pesanan", icon: ShoppingCart, href: "/admin/pesanan" },
   { name: "Laporan", icon: BarChart3, href: "/admin/laporan" },
-  { name: "Ulasan", icon: MessageSquare, href: "/admin/ulasan" },
   { name: "Promo", icon: Ticket, href: "/admin/promo" },
+  { name: "Ulasan", icon: MessageSquare, href: "/admin/ulasan" },
 ];
 
 export default function Sidebar() {

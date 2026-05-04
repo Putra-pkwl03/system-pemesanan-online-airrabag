@@ -13,24 +13,18 @@ export default function ProduckPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  
-  // State untuk Promo Modal
-  const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
-  const [activeProduct, setActiveProduct] = useState(null);
-  
-  // State untuk filtering
   const [selectedCategory, setSelectedCategory] = useState("Semua Produk");
+  
+  // 🔥 TAMBAHKAN STATE INI
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/admin/produk");
-      if (!res.ok) throw new Error("Gagal mengambil data");
       const data = await res.json();
       setProducts(data);
     } catch (error) {
-      console.error("Error fetch data:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -40,10 +34,7 @@ const [selectedProduct, setSelectedProduct] = useState<any>(null);
     fetchProducts();
   }, []);
 
-  // Handler untuk membuka modal promo dari Card
-  const handleOpenPromo = (product: any) => {
-    setActiveProduct(product);
-    setIsPromoModalOpen(true);
+
   };
 
   const dynamicCategories = [
@@ -51,9 +42,7 @@ const [selectedProduct, setSelectedProduct] = useState<any>(null);
     ...Array.from(new Set(products.map((p) => p.category))),
   ];
 
-  const filteredProducts = selectedCategory === "Semua Produk"
-    ? products
-    : products.filter((p) => p.category === selectedCategory);
+
 
   const formatIDR = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -113,25 +102,16 @@ const handleDelete = async (id: number) => {
 
   return (
     <section>
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-emerald-900">Produk</h1>
-          <p className="text-gray-400 text-sm">Kelola inventaris koleksi botani Anda.</p>
-        </div>
-      </div>
 
-      {/* Filter Categories Dinamis */}
       {!loading && products.length > 0 && (
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 mb-8 overflow-x-auto">
           {dynamicCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-full text-xs transition-all ${
                 selectedCategory === cat
-                  ? "bg-[#DDCC9D] text-black shadow-lg shadow-[#DDCC9D]/50"
-                  : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-100"
+
               }`}
             >
               {cat}
@@ -140,55 +120,38 @@ const handleDelete = async (id: number) => {
         </div>
       )}
 
-      {/* Grid Produk */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {/* Button Add New */}
         <button
+          type="button"
           onClick={() => setIsModalOpen(true)}
-          className="border-2 cursor-pointer border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6 hover:border-[#DDCC9D] hover:bg-[#DDCC9D]/20 transition-all group min-h-[280px]"
-        >
-          <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-[#DDCC9D] flex items-center justify-center text-gray-400 group-hover:text-black mb-3 transition-colors">
-            <Plus size={24} />
-          </div>
-          <span className="text-sm font-bold text-gray-400 group-hover:text-black">Add Product</span>
+
         </button>
 
         {loading ? (
-          <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
-            <Loader2 className="animate-spin mb-2 text-emerald-500" size={32} />
-            <p className="text-sm font-medium">Menyinkronkan data...</p>
+          <div className="flex items-center justify-center min-h-[200px]">
+            <Loader2 className="animate-spin text-emerald-600" />
           </div>
-        ) : filteredProducts.length > 0 ? (
+        ) : (
           filteredProducts.map((product: any) => (
             <ProductCard
               key={product.id}
               id={product.id}
-              onEdit={handleEditOpen}
-              onDelete={handleDelete}
+
               name={product.name}
               category={product.category}
               price={formatIDR(product.price)}
               stock={product.stock}
-              image={product.image || "https://images.unsplash.com/photo-1501004318641-729e8e22bd0e?q=80&w=500"}
-              onAddToPromo={handleOpenPromo} // Hubungkan handler ke card
-                         />
+
           ))
-        ) : (
-          <div className="col-span-full text-center py-20 bg-gray-50 rounded-3xl border border-gray-100">
-            <p className="text-gray-400">
-              {products.length === 0 
-                ? "Belum ada produk. Mulai tambahkan koleksi baru!" 
-                : `Tidak ada produk di kategori "${selectedCategory}"`}
-            </p>
-          </div>
         )}
       </div>
 
       {/* Modal untuk tambah produk baru */}
       <AddProductModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal} // Gunakan handleCloseModal
         onSuccess={fetchProducts}
+        editData={selectedProduct} // 🔥 Kirim data edit ke modal
       />
 
       {/* Modal untuk tambah ke promo (Pilih 2 Produk) */}

@@ -110,23 +110,32 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: "Gagal update produk" }, { status: 500 });
   }
 }
-
-// 🔥 DELETE PRODUCT
 export async function DELETE(req: NextRequest) {
   try {
-    const { id } = await req.json(); // Delete biasanya tetap pakai JSON
+    const id = req.nextUrl.searchParams.get("id");
+
+    console.log("ID:", id); // debug
 
     if (!id) {
-      return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
+      return NextResponse.json(
+        { message: "ID wajib diisi" },
+        { status: 400 }
+      );
     }
 
     await prisma.product.delete({
       where: { id: Number(id) },
     });
 
-    return NextResponse.json({ message: "Produk dihapus" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Produk dihapus" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Gagal hapus produk" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Gagal hapus produk" },
+      { status: 500 }
+    );
   }
 }
