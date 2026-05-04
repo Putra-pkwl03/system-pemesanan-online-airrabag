@@ -21,12 +21,34 @@ model User {
 model Product {
   id          Int         @id @default(autoincrement())
   name        String
-  category    String      // Tambahkan kolom ini
+  category    String      
   price       Float
   stock       Int
   image       String?
   createdAt   DateTime    @default(now())
   orderItems  OrderItem[]
+
+  // Relasi ke Promo (Produk bisa jadi produk utama atau pasangan di banyak promo)
+  promosAsMain    Promo[] @relation("MainProduct")
+  promosAsSecond  Promo[] @relation("SecondProduct")
+}
+
+model Promo {
+  id              Int      @id @default(autoincrement())
+  name            String?  // Nama paket (opsional)
+  description     String?  @db.Text
+  promoPrice      Float    // Harga total paket promo
+  
+  // Produk Pertama (Utama)
+  mainProductId   Int
+  mainProduct     Product  @relation("MainProduct", fields: [mainProductId], references: [id])
+  
+  // Produk Kedua (Pasangan)
+  secondProductId Int
+  secondProduct   Product  @relation("SecondProduct", fields: [secondProductId], references: [id])
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
 }
 
 model Order {

@@ -52,38 +52,41 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="flex justify-between items-center mb-10 relative">
-        <div className="flex items-center bg-gray-200/50 rounded-full px-4 py-2 w-96">
-          <Search size={18} className="text-gray-400 mr-2" />
-          <input type="text" placeholder="Search..." className="bg-transparent outline-none text-sm w-full" />
+    <header className="fixed top-0 left-0 right-0  z-50 flex justify-between items-center bg-[#B6AB91] p-6 shadow-md  h-[75px]">     
+         <div className="flex items-center  w-96">
+          <p>
+            <span className="text-gray-900 font-bold text-xl">AiraBag</span>
+            <br />
+            <span className="text-gray-800 text-xs uppercase tracking-widest">Tas Kulit Asli Jogja</span>
+          </p>
         </div>
 
         <div className="flex items-center space-x-6">
-          <Bell size={20} className="text-gray-400 cursor-pointer" />
-          <Settings size={20} className="text-gray-400 cursor-pointer" />
+          <Bell size={20} className="text-gray-800 cursor-pointer" />
+          <Settings size={20} className="text-gray-800 cursor-pointer" />
           
           <div className="relative" ref={dropdownRef}>
             <div 
-              className="flex items-center space-x-3 border-l pl-6 cursor-pointer group"
+              className="flex items-center space-x-3 border-l border-gray-800 pl-6 cursor-pointer group"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <div className="text-right">
                 {/* 🔥 Ganti nama statis dengan userData.name */}
-                <p className="text-sm font-bold text-emerald-900 leading-tight group-hover:text-emerald-600 transition-colors">
+                <p className="text-sm font-bold text-gray-800 leading-tight group-hover:text-gray-600 transition-colors">
                   {userData.name}
                 </p>
-                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-tighter">
+                <p className="text-[10px] text-gray-800 uppercase font-bold tracking-tighter">
                   {userData.role || "Owner"}
                 </p>
               </div>
-              <div className="w-10 h-10 bg-gray-300 rounded-lg overflow-hidden border border-emerald-100">
+              <div className="w-10 h-10 bg-[#7F7F7F54] rounded-lg overflow-hidden border border-gray-800">
                 <img 
-                  src={`https://ui-avatars.com/api/?name=${userData.name}&background=10b981&color=fff`} 
+                  src={`https://ui-avatars.com/api/?name=${userData.name}&background=7F7F7F54&color=#7F7F7F54`} 
                   alt="avatar" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={14} className={`text-gray-800 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
             </div>
 
             {isDropdownOpen && (
